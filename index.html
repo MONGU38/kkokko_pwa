@@ -418,7 +418,7 @@
 
         .notification-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 8px;
         }
@@ -427,6 +427,14 @@
             font-weight: 700;
             color: #ff6b35;
             font-size: 14px;
+        }
+
+        .close-notification {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #666;
         }
     </style>
 </head>
@@ -501,7 +509,7 @@
                 <div class="preference-section">
                     <div class="notification-toggle">
                         <label class="switch">
-                            <input type="checkbox" id="notificationToggle" checked>
+                            <input type="checkbox" id="notificationToggle" checked onchange="toggleNotifications()">
                             <span class="slider"></span>
                         </label>
                         <div>
@@ -540,7 +548,7 @@
             </div>
             
             <div id="inputArea" class="input-area hidden">
-                <input type="text" id="messageInput" class="message-input" placeholder="답변을 입력하세요...">
+                <input type="text" id="messageInput" class="message-input" placeholder="답변을 입력하세요..." onkeypress="if(event.key==='Enter') sendMessage()">
                 <button class="send-btn" onclick="sendMessage()">➤</button>
             </div>
         </div>
@@ -561,7 +569,7 @@
             <div class="chat-messages" id="chatMessages"></div>
             
             <div class="input-area">
-                <input type="text" id="chatInput" class="message-input" placeholder="메시지를 입력하세요...">
+                <input type="text" id="chatInput" class="message-input" placeholder="메시지를 입력하세요..." onkeypress="if(event.key==='Enter') sendChatMessage()">
                 <button class="send-btn" onclick="sendChatMessage()">➤</button>
             </div>
         </div>
@@ -576,6 +584,73 @@
         let notificationsEnabled = true;
         let searchInterval = null;
         let allMatches = [];
+        let currentQuestionIndex = 0;
+        
+        // 카테고리별 질문 시퀀스
+        const categoryQuestions = {
+            '실종가족': [
+                '먼저 마음이 많이 힘드실 텐데, 천천히 말씀해주세요. 실종된 가족분과의 관계를 알려주시겠어요? (자녀, 부모님, 형제자매 등)',
+                '실종된 시기를 알려주시겠어요? (대략적인 년월)',
+                '마지막으로 목격된 장소나 지역을 알려주시겠어요?',
+                '가족분의 나이와 성별을 알려주시겠어요?',
+                '가족분의 특징이나 당시 착용했던 옷차림 등을 기억하시는 게 있나요?'
+            ],
+            '이산가족': [
+                '가족분을 찾고 계시는군요. 어떤 관계의 가족분인지 알려주시겠어요? (부모님, 형제자매, 조부모님 등)',
+                '언제 헤어지게 되셨나요? (6.25 전쟁, 분단 등)',
+                '마지막으로 함께 계셨던 곳이 어디인가요?',
+                '가족분의 성함이나 본관을 알고 계시나요?',
+                '당시 나이나 생년월일을 기억하시나요?'
+            ],
+            '동네친구': [
+                '어린 시절 동네친구를 찾고 계시는군요! 몇 년도쯤에 어느 동네에서 함께 지냈는지 기억하시나요?',
+                '친구분의 이름이나 별명을 기억하시나요?',
+                '몇 살 때 친구였는지, 서로 몇 살 차이였는지 기억하시나요?',
+                '어떤 추억이 가장 기억에 남으시나요? (함께 놀던 장소, 특별한 경험 등)',
+                '친구분의 가족 상황이나 특징을 기억하시는 게 있나요?'
+            ],
+            '학교친구': [
+                '학창시절 친구를 찾고 계시는군요! 어느 학교 몇 학년 때 친구인지 알려주시겠어요?',
+                '친구분의 이름을 기억하시나요?',
+                '몇 년도에 함께 다녔는지 기억하시나요?',
+                '어떤 반이었는지, 담임선생님 성함 등을 기억하시나요?',
+                '친구분과의 특별한 추억이나 친구분의 특징을 알려주시겠어요?'
+            ],
+            '그리운친구': [
+                '그리운 친구를 찾고 계시는군요. 언제쯤 어떻게 만나게 되셨는지 알려주시겠어요?',
+                '친구분의 이름이나 별명을 기억하시나요?',
+                '주로 어디서 만나서 시간을 보내셨나요?',
+                '언제부터 언제까지 친하게 지내셨나요?',
+                '친구분의 특징이나 기억에 남는 에피소드가 있나요?'
+            ],
+            '군대친구': [
+                '군 복무 시절 전우를 찾고 계시는군요! 몇 년도에 어느 부대에서 함께 복무하셨나요?',
+                '전우분의 이름이나 별명을 기억하시나요?',
+                '어느 지역 출신이셨는지 기억하시나요?',
+                '같은 소대나 분대였나요? 계급은 어떻게 되셨나요?',
+                '기억에 남는 에피소드나 전우분의 특징이 있나요?'
+            ],
+            '직장친구': [
+                '직장 동료를 찾고 계시는군요! 어느 회사에서 몇 년도에 함께 근무하셨나요?',
+                '동료분의 이름을 기억하시나요?',
+                '어떤 부서에서 함께 일하셨나요?',
+                '언제부터 언제까지 함께 근무하셨나요?',
+                '동료분의 특징이나 함께했던 프로젝트, 기억에 남는 일화가 있나요?'
+            ]
+        };
+        
+        // 서비스 워커 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
         
         // 온라인 사용자 수 업데이트
         function updateOnlineUsers() {
@@ -646,107 +721,4 @@
             const content = document.getElementById('notificationContent');
             
             content.innerHTML = `
-                <div style="font-weight: 600; margin-bottom: 4px;">${match.name}</div>
-                <div style="font-size: 13px; color: #ff6b35;">${match.similarity}% 일치 • ${match.commonPoints}개 공통점</div>
-                <div style="font-size: 12px; color: #666;">${match.location} • ${match.hoursAgo}시간 전 활동</div>
-            `;
-            
-            notification.classList.add('show');
-            
-            // 5초 후 자동 닫기
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 5000);
-            
-            // 사운드 효과 (간단한 beep)
-            try {
-                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQbBzuL0OOWMQYZ');
-                audio.volume = 0.3;
-                audio.play().catch(() => {}); // 사운드 재생 실패해도 무시
-            } catch (e) {}
-        }
-        
-        // 알림 닫기
-        function closeNotification() {
-            document.getElementById('matchNotification').classList.remove('show');
-        }
-        
-        // 새 매칭 보기
-        function viewNewMatches() {
-            closeNotification();
-            showMatches();
-        }
-        
-        // 알림 토글
-        function toggleNotifications() {
-            notificationsEnabled = document.getElementById('notificationToggle').checked;
-        }
-        
-        // 로그인
-        function login() {
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-            
-            if (username && password) {
-                // 화면 전환
-                document.getElementById('loginScreen').classList.remove('active');
-                document.getElementById('mainScreen').classList.add('active');
-                
-                // 환영 메시지
-                setTimeout(() => {
-                    addMainMessage('ai', '안녕하세요! kkokkoyou에 오신 것을 환영합니다. 🎉\n\n100% 무료 스마트 AI로 소중한 인연을 찾아드리겠습니다.\n\n어떤 분을 찾고 계신가요?');
-                }, 500);
-                
-                currentScreen = 'main';
-            } else {
-                alert('아이디와 비밀번호를 입력해주세요.');
-            }
-        }
-        
-        // 로그아웃
-        function logout() {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            document.getElementById('loginScreen').classList.add('active');
-            
-            // 검색 중지
-            if (searchInterval) {
-                clearInterval(searchInterval);
-                searchInterval = null;
-            }
-            
-            // 초기화
-            document.getElementById('username').value = 'demo';
-            document.getElementById('password').value = '1234';
-            document.getElementById('mainMessages').innerHTML = '';
-            document.getElementById('categoriesArea').classList.remove('hidden');
-            document.getElementById('inputArea').classList.add('hidden');
-            document.getElementById('matchesArea').classList.add('hidden');
-            document.getElementById('matchingPreferences').classList.add('hidden');
-            
-            currentScreen = 'login';
-            userResponses = [];
-            currentCategory = '';
-            allMatches = [];
-        }
-        
-        // 카테고리 선택
-        function selectCategory(category) {
-            currentCategory = category;
-            userResponses = [];
-            
-            addMainMessage('user', category);
-            
-            // 매칭 설정 표시
-            document.getElementById('matchingPreferences').classList.remove('hidden');
-            
-            setTimeout(() => {
-                const firstQuestions = {
-                    '실종가족': '먼저 마음이 많이 힘드실 텐데, 천천히 말씀해주세요. 실종된 가족분과의 관계를 알려주시겠어요? (자녀, 부모님, 형제자매 등)',
-                    '이산가족': '가족분을 찾고 계시는군요. 어떤 관계의 가족분인지 알려주시겠어요? (부모님, 형제자매, 조부모님 등)',
-                    '동네친구': '어린 시절 동네친구를 찾고 계시는군요! 몇 년도쯤에 어느 동네에서 함께 지냈는지 기억하시나요?',
-                    '학교친구': '학창시절 친구를 찾고 계시는군요! 어느 학교 몇 학년 때 친구인지 알려주시겠어요?',
-                    '그리운친구': '그리운 친구를 찾고 계시는군요. 언제쯤 어떻게 만나게 되셨는지 알려주시겠어요?',
-                    '군대친구': '군 복무 시절 전우를 찾고 계시는군요! 몇 년도에 어느 부대에서 함께 복무하셨나요?',
-                    '직장친구': '직장 동
+                <div style="font-weight: 600; margin-bottom: 4px
