@@ -1,9 +1,9 @@
-
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>꼬꼬너 - AI 인연찾기</title>
+    <title>kkokkoyou - AI 인연찾기</title>
     <meta name="description" content="AI 기술로 잃어버린 소중한 인연을 찾아드립니다">
     <meta name="theme-color" content="#ff6b35">
     <link rel="manifest" href="manifest.json">
@@ -275,7 +275,6 @@
             color: #2d5016;
         }
 
-        /* 매칭 정확도 선택 영역 */
         .matching-preferences {
             background: white;
             padding: 20px;
@@ -429,62 +428,9 @@
             color: #ff6b35;
             font-size: 14px;
         }
-
-        .install-prompt {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #ff6b35, #ff9a56);
-            color: white;
-            padding: 16px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            z-index: 10001;
-            display: none;
-        }
-
-        .install-prompt.show {
-            display: block;
-        }
-
-        .install-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .install-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .install-btn.primary {
-            background: white;
-            color: #ff6b35;
-        }
-
-        .install-btn.secondary {
-            background: rgba(255,255,255,0.2);
-            color: white;
-        }
     </style>
 </head>
 <body>
-    <!-- PWA 설치 프롬프트 -->
-    <div id="installPrompt" class="install-prompt">
-        <div style="font-weight: 700; margin-bottom: 8px;">📱 앱으로 설치하기</div>
-        <div style="font-size: 14px; margin-bottom: 12px;">"꼬꼬너"를 홈 화면에 추가하여 앱처럼 사용하세요!</div>
-        <div class="install-buttons">
-            <button class="install-btn primary" onclick="installApp()">설치하기</button>
-            <button class="install-btn secondary" onclick="dismissInstall()">나중에</button>
-        </div>
-    </div>
-
     <!-- 알림 토스트 -->
     <div id="matchNotification" class="match-notification">
         <div class="notification-header">
@@ -498,7 +444,7 @@
     <!-- 로그인 화면 -->
     <div id="loginScreen" class="screen active">
         <div class="container">
-            <h1>🎉 꼬꼬너 🎉</h1>
+            <h1>🎉 kkokkoyou 🎉</h1>
             <p class="subtitle">AI 기술로 찾아주는 소중한 인연</p>
             
             <div class="ai-model-status">
@@ -526,14 +472,13 @@
     <div id="mainScreen" class="screen">
         <div class="chat-container">
             <div class="chat-header">
-                <h2>🤖 꼬꼬너 AI</h2>
+                <h2>🤖 kkokkoyou AI</h2>
                 <div style="font-size: 12px; color: #666;">
                     스마트 AI • <span id="onlineUsers">128</span>명
                 </div>
                 <button class="back-btn" onclick="logout()">🚪</button>
             </div>
 
-            <!-- 매칭 설정 영역 -->
             <div id="matchingPreferences" class="matching-preferences hidden">
                 <div class="preference-section">
                     <div class="preference-title">🎯 매칭 정확도 설정</div>
@@ -631,55 +576,6 @@
         let notificationsEnabled = true;
         let searchInterval = null;
         let allMatches = [];
-        // PWA 관련 변수 (서버에서만 사용)
-        let deferredPrompt = null;
-        
-        // 서비스 워커와 PWA는 실제 서버에서만 활성화
-        function initializePWA() {
-            // Claude 환경이나 샌드박스 환경 체크
-            const isClaudeEnv = window.location.hostname.includes('claude.ai') || 
-                               window.location.protocol === 'data:' ||
-                               window.location.hostname === '';
-            
-            if (isClaudeEnv) {
-                console.log('데모 환경: PWA 기능은 실제 웹서버에서 활성화됩니다.');
-                return;
-            }
-            
-            // 실제 서버에서만 PWA 기능 활성화
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/sw.js')
-                        .then((registration) => {
-                            console.log('SW registered: ', registration);
-                        })
-                        .catch((registrationError) => {
-                            console.log('SW registration failed: ', registrationError);
-                        });
-                });
-            }
-            
-            // PWA 설치 프롬프트
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                
-                if (currentScreen !== 'login') {
-                    setTimeout(() => {
-                        document.getElementById('installPrompt').classList.add('show');
-                    }, 3000);
-                }
-            });
-        }
-        
-        // 페이지 로드 시 PWA 초기화 (실제 서버에서만)
-        document.addEventListener('DOMContentLoaded', () => {
-            try {
-                initializePWA();
-            } catch (error) {
-                console.log('PWA 초기화 건너뜀 (데모 환경)');
-            }
-        });
         
         // 온라인 사용자 수 업데이트
         function updateOnlineUsers() {
@@ -798,31 +694,8 @@
                 
                 // 환영 메시지
                 setTimeout(() => {
-                    addMainMessage('ai', '안녕하세요! 꼬꼬너에 오신 것을 환영합니다. 🎉\n\n100% 무료 스마트 AI로 소중한 인연을 찾아드리겠습니다.\n\n어떤 분을 찾고 계신가요?');
+                    addMainMessage('ai', '안녕하세요! kkokkoyou에 오신 것을 환영합니다. 🎉\n\n100% 무료 스마트 AI로 소중한 인연을 찾아드리겠습니다.\n\n어떤 분을 찾고 계신가요?');
                 }, 500);
-                
-        // 앱 설치 함수
-        function installApp() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('사용자가 앱 설치를 수락했습니다');
-                    }
-                    deferredPrompt = null;
-                    document.getElementById('installPrompt').classList.remove('show');
-                });
-            } else {
-                // 데모 환경에서는 안내 메시지
-                alert('🚀 실제 웹서버에 배포하면 앱 설치가 가능합니다!\n\n지금은 데모 환경이에요. GitHub Pages나 웹호스팅에 올리면 홈 화면에 설치할 수 있어요! 😊');
-                document.getElementById('installPrompt').classList.remove('show');
-            }
-        }
-        
-        // 설치 프롬프트 닫기
-        function dismissInstall() {
-            document.getElementById('installPrompt').classList.remove('show');
-        }
                 
                 currentScreen = 'main';
             } else {
@@ -876,326 +749,4 @@
                     '학교친구': '학창시절 친구를 찾고 계시는군요! 어느 학교 몇 학년 때 친구인지 알려주시겠어요?',
                     '그리운친구': '그리운 친구를 찾고 계시는군요. 언제쯤 어떻게 만나게 되셨는지 알려주시겠어요?',
                     '군대친구': '군 복무 시절 전우를 찾고 계시는군요! 몇 년도에 어느 부대에서 함께 복무하셨나요?',
-                    '직장친구': '직장 동료를 찾고 계시는군요! 어느 회사에서 몇 년도에 함께 일하셨나요?'
-                };
-                
-                const question = firstQuestions[category] || '더 자세한 정보를 알려주세요.';
-                addMainMessage('ai', question);
-                
-                document.getElementById('categoriesArea').classList.add('hidden');
-                document.getElementById('inputArea').classList.remove('hidden');
-                
-                // 실시간 매칭 시작
-                startLiveMatching();
-            }, 1000);
-        }
-        
-        // 메시지 전송
-        function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-            
-            if (!message) return;
-            
-            addMainMessage('user', message);
-            userResponses.push(message);
-            input.value = '';
-            
-            setTimeout(() => {
-                const response = generateResponse(message);
-                
-                if (userResponses.length >= 8) {
-                    addMainMessage('ai', response, true);
-                } else {
-                    addMainMessage('ai', response);
-                }
-            }, 1500);
-        }
-        
-        // AI 응답 생성 (10개 질문)
-        function generateResponse(userInput) {
-            const input = userInput.toLowerCase();
-            const responseCount = userResponses.length;
-            
-            // 키워드 기반 응답
-            if (input.includes('년') || /\d{4}/.test(input)) {
-                const year = input.match(/\d{4}/)?.[0];
-                if (year) {
-                    return `${year}년이셨군요! 그때 몇 살 정도였는지, 그리고 그 시기에 특별히 기억나는 사건이나 장소가 있나요?`;
-                }
-            }
-            
-            // 10단계 질문 시스템
-            const allQuestions = {
-                '실종가족': [
-                    '실종 당시 몇 살이었나요?',
-                    '어떤 옷을 입고 있었는지 기억하시나요?',
-                    '실종된 장소나 마지막 목격 장소를 알려주세요.',
-                    '특별한 신체적 특징이 있었나요? (점, 흉터, birthmark 등)',
-                    '좋아했던 장난감이나 음식이 있었나요?',
-                    '당시 함께 있던 가족은 누구였나요?',
-                    '실종 당일 특별한 일이 있었나요?',
-                    '평소 자주 가던 장소가 있었나요?',
-                    '말버릇이나 특별한 행동이 있었나요?',
-                    '마지막으로, 그분을 찾으면 가장 하고 싶은 말이 있나요?'
-                ],
-                '이산가족': [
-                    '마지막으로 만난 것이 언제쯤인가요?',
-                    '그때 어느 지역에 살고 계셨나요?',
-                    '그분의 나이대를 알려주세요.',
-                    '직업이나 하시던 일이 있었나요?',
-                    '특별한 외모 특징을 기억하시나요?',
-                    '함께 살던 다른 가족들은 누구였나요?',
-                    '그분의 취미나 특기가 있었나요?',
-                    '기억나는 특별한 사건이나 추억이 있나요?',
-                    '헤어지게 된 이유나 상황을 알려주세요.',
-                    '재회하면 가장 먼저 하고 싶은 이야기가 있나요?'
-                ],
-                '동네친구': [
-                    '그 친구의 이름이나 별명을 기억하시나요?',
-                    '주로 어떤 놀이를 함께 했나요?',
-                    '몇 살 차이였나요?',
-                    '그 친구 집은 우리 집에서 가까웠나요?',
-                    '함께 다닌 학원이나 특별한 장소가 있었나요?',
-                    '그 친구의 외모 특징을 기억하시나요?',
-                    '가장 기억에 남는 추억이 뭔가요?',
-                    '그 친구 가족에 대해 기억나는 게 있나요?',
-                    '마지막으로 만난 상황을 기억하시나요?',
-                    '그 친구와 다시 만나면 뭘 하고 싶나요?'
-                ],
-                '학교친구': [
-                    '그 친구의 이름이나 별명을 기억하시나요?',
-                    '담임선생님 성함을 기억하시나요?',
-                    '같은 반이었나요, 다른 반이었나요?',
-                    '그 친구는 몇 번째 자리에 앉았나요?',
-                    '함께 참여한 동아리나 활동이 있었나요?',
-                    '그 친구가 잘했던 과목이나 특기가 있었나요?',
-                    '점심시간이나 쉬는시간에 뭘 했나요?',
-                    '수학여행이나 소풍 때 함께한 기억이 있나요?',
-                    '졸업 후 연락이 끊긴 이유가 있나요?',
-                    '그 친구와 다시 만나면 어떤 이야기를 하고 싶나요?'
-                ],
-                '그리운친구': [
-                    '그분의 이름이나 별명을 기억하시나요?',
-                    '자주 함께 갔던 장소가 있나요?',
-                    '얼마나 오래 알고 지내셨나요?',
-                    '어떤 계기로 연락이 끊기게 되셨나요?',
-                    '그분의 취미나 특기가 있었나요?',
-                    '특별한 기념일이나 추억이 있나요?',
-                    '그분이 좋아했던 음식이나 음악이 있었나요?',
-                    '서로 부르던 특별한 별명이 있었나요?',
-                    '마지막으로 만났을 때 상황을 기억하시나요?',
-                    '다시 만난다면 가장 하고 싶은 말이 있나요?'
-                ],
-                '군대친구': [
-                    '그 전우분의 이름이나 별명을 기억하시나요?',
-                    '같은 기수였나요, 선후임 관계였나요?',
-                    '어떤 보직이나 역할을 하셨나요?',
-                    '함께했던 훈련이나 특별한 에피소드가 있나요?',
-                    '그분 고향이 어디였는지 기억하시나요?',
-                    '휴가 때 함께 어디 간 적이 있나요?',
-                    '그분의 특별한 특기나 취미가 있었나요?',
-                    '전역 후 연락이 끊긴 이유가 있나요?',
-                    '군대에서 함께 꿈꿨던 일이 있었나요?',
-                    '그 전우와 다시 만나면 뭘 하고 싶나요?'
-                ],
-                '직장친구': [
-                    '그 동료분의 이름이나 별명을 기억하시나요?',
-                    '같은 부서였나요, 다른 부서였나요?',
-                    '함께 진행했던 프로젝트나 업무가 있나요?',
-                    '자주 함께 점심 먹거나 회식했나요?',
-                    '그분의 직급이나 역할이 어떻게 되었나요?',
-                    '함께 출장을 간 적이 있나요?',
-                    '그분의 특별한 능력이나 특기가 있었나요?',
-                    '퇴사하거나 이직한 이유를 아시나요?',
-                    '개인적으로 가까웠던 사이였나요?',
-                    '다시 만나면 어떤 일을 함께 하고 싶나요?'
-                ]
-            };
-            
-            const questions = allQuestions[currentCategory] || [];
-            
-            if (responseCount <= questions.length) {
-                return questions[responseCount - 1] || '더 자세한 정보를 알려주세요.';
-            } else {
-                return '정말 상세한 정보를 주셨네요! 이제 AI가 데이터베이스를 분석해서 매칭 결과를 찾아드릴게요. 🤖✨';
-            }
-        }
-        
-        // 매칭 결과 표시
-        function showMatches() {
-            document.getElementById('categoriesArea').classList.add('hidden');
-            document.getElementById('inputArea').classList.add('hidden');
-            document.getElementById('matchesArea').classList.remove('hidden');
-            document.getElementById('matchingPreferences').classList.add('hidden');
-            
-            // 기본 매칭 + 실시간 매칭 결합
-            const baseMatches = [
-                { name: '김영희', similarity: 95, commonPoints: 12, location: '서울', hoursAgo: 2 },
-                { name: '박철수', similarity: 87, commonPoints: 9, location: '부산', hoursAgo: 5 },
-                { name: '이민수', similarity: 78, commonPoints: 7, location: '대구', hoursAgo: 12 }
-            ];
-            
-            // 설정한 임계값에 따라 필터링
-            const filteredMatches = [...baseMatches, ...allMatches].filter(match => 
-                match.similarity >= matchingThreshold
-            ).sort((a, b) => b.similarity - a.similarity);
-            
-            let html = '';
-            if (filteredMatches.length === 0) {
-                html = `
-                    <div style="text-align: center; padding: 40px; color: #666;">
-                        <div style="font-size: 48px; margin-bottom: 16px;">🔍</div>
-                        <div style="font-weight: 600; margin-bottom: 8px;">아직 ${matchingThreshold}% 이상 매칭이 없습니다</div>
-                        <div style="font-size: 14px;">매칭 정확도를 낮추거나 더 많은 정보를 입력해보세요</div>
-                        <button onclick="setThreshold(30)" style="margin-top: 16px; padding: 10px 20px; background: #ff6b35; color: white; border: none; border-radius: 20px; cursor: pointer;">30%로 낮추기</button>
-                    </div>
-                `;
-            } else {
-                filteredMatches.forEach((match, i) => {
-                    const isNew = allMatches.includes(match);
-                    html += `
-                        <div class="match-item" style="${isNew ? 'border-color: #28a745; background: rgba(40, 167, 69, 0.05);' : ''}">
-                            <div>
-                                <div style="font-weight: bold;">
-                                    ${match.name}
-                                    ${isNew ? '<span style="background: #28a745; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 8px;">NEW</span>' : ''}
-                                </div>
-                                <div style="color: #ff6b35; font-size: 14px;">${match.similarity}% 일치 • ${match.commonPoints}개 공통점</div>
-                                <div style="color: #666; font-size: 12px;">${match.location} • ${match.hoursAgo}시간 전 활동</div>
-                            </div>
-                            <button class="chat-btn" onclick="startChat('${match.name}', ${match.similarity})">💬 채팅하기</button>
-                        </div>
-                    `;
-                });
-            }
-            
-            document.getElementById('matchesList').innerHTML = html;
-        }
-        
-        // 채팅 시작
-        function startChat(name, similarity) {
-            document.getElementById('mainScreen').classList.remove('active');
-            document.getElementById('chatScreen').classList.add('active');
-            
-            document.getElementById('chatPartnerName').textContent = name;
-            document.getElementById('matchInfo').textContent = `AI 매칭 ${similarity}%`;
-            
-            // 채팅 메시지 초기화
-            document.getElementById('chatMessages').innerHTML = '';
-            
-            // 초기 메시지들
-            setTimeout(() => {
-                addChatMessage('other', '안녕하세요! 정말 저를 찾고 계셨나요? 😊');
-            }, 500);
-            
-            setTimeout(() => {
-                addChatMessage('info', '💡 개인정보 보호를 위해 점진적으로 확인하시기 바랍니다.');
-            }, 1500);
-            
-            currentScreen = 'chat';
-        }
-        
-        // 채팅 메시지 전송
-        function sendChatMessage() {
-            const input = document.getElementById('chatInput');
-            const message = input.value.trim();
-            
-            if (message) {
-                addChatMessage('user', message);
-                input.value = '';
-                
-                // AI 자동 응답
-                setTimeout(() => {
-                    const responses = [
-                        '네, 맞습니다! 정말 오랜만이에요. 🥲',
-                        '혹시 더 기억나는 것이 있나요?',
-                        '사진을 보내드릴까요? 📸',
-                        '언제 만날 수 있을까요?',
-                        '정말 찾아주셨네요... 감사합니다 😭'
-                    ];
-                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                    addChatMessage('other', randomResponse);
-                }, 1500);
-            }
-        }
-        
-        // 뒤로가기
-        function goBack() {
-            document.getElementById('chatScreen').classList.remove('active');
-            document.getElementById('mainScreen').classList.add('active');
-            currentScreen = 'main';
-        }
-        
-        // 메인 메시지 추가
-        function addMainMessage(type, content, showMatching = false) {
-            const container = document.getElementById('mainMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}`;
-            
-            let buttons = '';
-            if (showMatching) {
-                buttons = '<button onclick="showMatches()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 20px; cursor: pointer;">🎯 AI 매칭 결과 보기</button>';
-            }
-            
-            messageDiv.innerHTML = `
-                <div style="width: 32px; height: 32px; border-radius: 50%; background: ${type === 'user' ? '#6c757d' : 'linear-gradient(135deg, #ff6b35, #ff9a56)'}; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
-                    ${type === 'user' ? '👤' : '🤖'}
-                </div>
-                <div class="message-content">
-                    ${content.replace(/\n/g, '<br>')}
-                    ${buttons}
-                </div>
-            `;
-            
-            container.appendChild(messageDiv);
-            container.scrollTop = container.scrollHeight;
-        }
-        
-        // 채팅 메시지 추가
-        function addChatMessage(type, content) {
-            const container = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}`;
-            
-            if (type === 'info') {
-                messageDiv.innerHTML = `
-                    <div class="message-content" style="margin: 0 auto; background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; max-width: 90%; text-align: center; font-size: 14px;">
-                        ${content}
-                    </div>
-                `;
-            } else {
-                messageDiv.innerHTML = `
-                    <div style="width: 32px; height: 32px; border-radius: 50%; background: ${type === 'user' ? '#6c757d' : '#1565c0'}; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
-                        ${type === 'user' ? '👤' : '👋'}
-                    </div>
-                    <div class="message-content" style="background: ${type === 'user' ? 'linear-gradient(135deg, #ff6b35, #ff9a56)' : '#e3f2fd'}; color: ${type === 'user' ? 'white' : '#1565c0'}; border: ${type === 'user' ? 'none' : '1px solid #bbdefb'};">
-                        ${content}
-                    </div>
-                `;
-            }
-            
-            container.appendChild(messageDiv);
-            setTimeout(() => container.scrollTop = container.scrollHeight, 100);
-        }
-        
-        // 엔터키 이벤트
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('password').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') login();
-            });
-            
-            document.getElementById('messageInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') sendMessage();
-            });
-            
-            document.getElementById('chatInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') sendChatMessage();
-            });
-            
-            // 알림 토글 이벤트
-            document.getElementById('notificationToggle').addEventListener('change', toggleNotifications);
-        });
-    </script>
-</body>
-</html>
+                    '직장친구': '직장 동
