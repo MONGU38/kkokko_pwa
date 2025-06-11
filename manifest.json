@@ -1,0 +1,55 @@
+{
+  "name": "꼬꼬너 - AI 인연찾기",
+  "short_name": "꼬꼬너",
+  "description": "AI 기술로 잃어버린 소중한 인연을 찾아드립니다",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "
+#ffffff",
+  "theme_color": "
+#ff6b35",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "ko",
+  "categories": ["social", "lifestyle"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><circle cx='96' cy='96' r='80' fill='%23ff6b35'/><text x='96' y='130' text-anchor='middle' fill='white' font-size='80' font-family='Arial'>🎉</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><circle cx='256' cy='256' r='200' fill='%23ff6b35'/><text x='256' y='340' text-anchor='middle' fill='white' font-size='200' font-family='Arial'>🎉</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "친구 찾기",
+      "short_name": "친구찾기",
+      "description": "그리운 친구를 찾아보세요",
+      "url": "/#친구찾기",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><circle cx='48' cy='48' r='40' fill='%23ff6b35'/><text x='48' y='62' text-anchor='middle' fill='white' font-size='30'>👥</text></svg>",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "가족 찾기",
+      "short_name": "가족찾기", 
+      "description": "소중한 가족을 찾아보세요",
+      "url": "/#가족찾기",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><circle cx='48' cy='48' r='40' fill='%23ff6b35'/><text x='48' y='62' text-anchor='middle' fill='white' font-size='30'>👨‍👩‍👧‍👦</text></svg>",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
