@@ -1,8 +1,9 @@
 // 서비스 워커 버전
-const CACHE_NAME = 'kokoner-v1.0.0';
+const CACHE_NAME = 'kkokkoyou-v1.0.0';
 const urlsToCache = [
   '/',
   '/manifest.json',
+  '/index.html',
   // 오프라인에서도 작동할 기본 리소스들
 ];
 
@@ -80,7 +81,7 @@ self.addEventListener('push', (event) => {
     icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><circle cx='96' cy='96' r='80' fill='%23ff6b35'/><text x='96' y='130' text-anchor='middle' fill='white' font-size='80' font-family='Arial'>🎉</text></svg>",
     badge: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><circle cx='48' cy='48' r='40' fill='%23ff6b35'/><text x='48' y='62' text-anchor='middle' fill='white' font-size='30'>🔍</text></svg>",
     vibrate: [200, 100, 200],
-    tag: 'kokoner-match',
+    tag: 'kkokkoyou-match',
     requireInteraction: true,
     actions: [
       {
@@ -97,7 +98,7 @@ self.addEventListener('push', (event) => {
   };
   
   event.waitUntil(
-    self.registration.showNotification('꼬꼬너 🎉', options)
+    self.registration.showNotification('kkokkoyou 🎉', options)
   );
 });
 
@@ -156,7 +157,7 @@ self.addEventListener('message', (event) => {
   
   if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
     const { title, body, icon } = event.data;
-    self.registration.showNotification(title || '꼬꼬너', {
+    self.registration.showNotification(title || 'kkokkoyou', {
       body: body || '새로운 알림이 있습니다.',
       icon: icon || "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><circle cx='96' cy='96' r='80' fill='%23ff6b35'/><text x='96' y='130' text-anchor='middle' fill='white' font-size='80' font-family='Arial'>🎉</text></svg>",
       tag: 'custom-notification'
