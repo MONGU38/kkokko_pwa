@@ -1,13 +1,11 @@
 {
-  "name": "꼬꼬너 - AI 인연찾기",
-  "short_name": "꼬꼬너",
+  "name": "kkokkoyou - AI 인연찾기",
+  "short_name": "kkokkoyou",
   "description": "AI 기술로 잃어버린 소중한 인연을 찾아드립니다",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "
-#ffffff",
-  "theme_color": "
-#ff6b35",
+  "background_color": "#ffffff",
+  "theme_color": "#ff6b35",
   "orientation": "portrait",
   "scope": "/",
   "lang": "ko",
@@ -41,7 +39,7 @@
     },
     {
       "name": "가족 찾기",
-      "short_name": "가족찾기", 
+      "short_name": "가족찾기",
       "description": "소중한 가족을 찾아보세요",
       "url": "/#가족찾기",
       "icons": [
