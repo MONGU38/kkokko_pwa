@@ -721,4 +721,302 @@
             const content = document.getElementById('notificationContent');
             
             content.innerHTML = `
-                <div style="font-weight: 600; margin-bottom: 4px
+                <div style="font-weight: 600; margin-bottom: 4px;">${match.name}</div>
+                <div style="font-size: 13px; color: #ff6b35;">${match.similarity}% 일치 • ${match.commonPoints}개 공통점</div>
+                <div style="font-size: 12px; color: #666;">${match.location} • ${match.hoursAgo}시간 전 활동</div>
+            `;
+            
+            notification.classList.add('show');
+            
+            // 5초 후 자동 닫기
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+            
+            // 사운드 효과 (간단한 beep)
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQbBzuL0OOWMQYZ');
+                audio.volume = 0.3;
+                audio.play().catch(() => {}); // 사운드 재생 실패해도 무시
+            } catch (e) {}
+        }
+        
+        // 알림 닫기
+        function closeNotification() {
+            document.getElementById('matchNotification').classList.remove('show');
+        }
+        
+        // 새 매칭 보기
+        function viewNewMatches() {
+            closeNotification();
+            showMatches();
+        }
+        
+        // 알림 토글
+        function toggleNotifications() {
+            notificationsEnabled = document.getElementById('notificationToggle').checked;
+        }
+        
+        // 로그인
+        function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (username && password) {
+                // 화면 전환
+                document.getElementById('loginScreen').classList.remove('active');
+                document.getElementById('mainScreen').classList.add('active');
+                
+                // 환영 메시지
+                setTimeout(() => {
+                    addMainMessage('ai', '안녕하세요! kkokkoyou에 오신 것을 환영합니다. 🎉\n\n100% 무료 스마트 AI로 소중한 인연을 찾아드리겠습니다.\n\n어떤 분을 찾고 계신가요?');
+                }, 500);
+                
+                currentScreen = 'main';
+            } else {
+                alert('아이디와 비밀번호를 입력해주세요.');
+            }
+        }
+        
+        // 로그아웃
+        function logout() {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById('loginScreen').classList.add('active');
+            
+            // 검색 중지
+            if (searchInterval) {
+                clearInterval(searchInterval);
+                searchInterval = null;
+            }
+            
+            // 초기화
+            document.getElementById('username').value = 'demo';
+            document.getElementById('password').value = '1234';
+            document.getElementById('mainMessages').innerHTML = '';
+            document.getElementById('categoriesArea').classList.remove('hidden');
+            document.getElementById('inputArea').classList.add('hidden');
+            document.getElementById('matchesArea').classList.add('hidden');
+            document.getElementById('matchingPreferences').classList.add('hidden');
+            
+            currentScreen = 'login';
+            userResponses = [];
+            currentCategory = '';
+            allMatches = [];
+            currentQuestionIndex = 0;
+        }
+        
+        // 카테고리 선택
+        function selectCategory(category) {
+            currentCategory = category;
+            userResponses = [];
+            currentQuestionIndex = 0;
+            
+            addMainMessage('user', category);
+            
+            // 매칭 설정 표시
+            document.getElementById('matchingPreferences').classList.remove('hidden');
+            
+            // 카테고리 숨기고 입력 영역 표시
+            document.getElementById('categoriesArea').classList.add('hidden');
+            document.getElementById('inputArea').classList.remove('hidden');
+            
+            setTimeout(() => {
+                const questions = categoryQuestions[category];
+                if (questions && questions[0]) {
+                    addMainMessage('ai', questions[0]);
+                }
+                startLiveMatching();
+            }, 1000);
+        }
+        
+        // 메인 메시지 추가
+        function addMainMessage(sender, message) {
+            const messagesContainer = document.getElementById('mainMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = message;
+            
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 메시지 전송
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMainMessage('user', message);
+                userResponses.push(message);
+                input.value = '';
+                
+                // AI 응답 처리
+                setTimeout(() => {
+                    handleAIResponse();
+                }, 1000);
+            }
+        }
+        
+        // AI 응답 처리
+        function handleAIResponse() {
+            const questions = categoryQuestions[currentCategory];
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questions.length) {
+                // 다음 질문
+                addMainMessage('ai', questions[currentQuestionIndex]);
+            } else {
+                // 질문 완료, 매칭 시작
+                addMainMessage('ai', '정보를 모두 입력해주셔서 감사합니다! 🎯\n\nAI가 분석을 시작합니다. 잠시만 기다려주세요...');
+                
+                setTimeout(() => {
+                    addMainMessage('ai', '분석이 완료되었습니다! 매칭 결과를 확인해보세요. 🎉');
+                    generateInitialMatches();
+                }, 2000);
+            }
+        }
+        
+        // 초기 매칭 결과 생성
+        function generateInitialMatches() {
+            const matches = [];
+            for (let i = 0; i < 5; i++) {
+                matches.push(generateRandomMatch());
+            }
+            allMatches = matches;
+        }
+        
+        // 매칭 결과 보기
+        function showMatches() {
+            document.getElementById('categoriesArea').classList.add('hidden');
+            document.getElementById('inputArea').classList.add('hidden');
+            document.getElementById('matchesArea').classList.remove('hidden');
+            
+            const matchesList = document.getElementById('matchesList');
+            
+            if (allMatches.length === 0) {
+                matchesList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 3em; margin-bottom: 16px;">🔍</div>
+                        <div style="font-size: 18px; margin-bottom: 8px;">아직 매칭 결과가 없습니다</div>
+                        <div style="font-size: 14px;">카테고리를 선택하고 정보를 입력해주세요</div>
+                        <button onclick="goBackToCategories()" style="margin-top: 20px; padding: 12px 24px; background: #ff6b35; color: white; border: none; border-radius: 8px; cursor: pointer;">카테고리로 돌아가기</button>
+                    </div>
+                `;
+            } else {
+                let matchesHTML = '';
+                allMatches.forEach((match, index) => {
+                    matchesHTML += `
+                        <div class="match-item">
+                            <div>
+                                <div style="font-weight: 600; margin-bottom: 4px;">${match.name}</div>
+                                <div style="font-size: 13px; color: #ff6b35;">${match.similarity}% 일치 • ${match.commonPoints}개 공통점</div>
+                                <div style="font-size: 12px; color: #666;">${match.location} • ${match.hoursAgo}시간 전 활동</div>
+                            </div>
+                            <button class="chat-btn" onclick="startChat('${match.name}', ${match.similarity})">대화하기</button>
+                        </div>
+                    `;
+                });
+                matchesList.innerHTML = matchesHTML;
+            }
+        }
+        
+        // 카테고리로 돌아가기
+        function goBackToCategories() {
+            document.getElementById('matchesArea').classList.add('hidden');
+            document.getElementById('categoriesArea').classList.remove('hidden');
+            document.getElementById('inputArea').classList.add('hidden');
+            document.getElementById('matchingPreferences').classList.add('hidden');
+            
+            // 검색 중지
+            if (searchInterval) {
+                clearInterval(searchInterval);
+                searchInterval = null;
+            }
+            
+            currentCategory = '';
+            userResponses = [];
+            currentQuestionIndex = 0;
+        }
+        
+        // 채팅 시작
+        function startChat(name, similarity) {
+            document.getElementById('mainScreen').classList.remove('active');
+            document.getElementById('chatScreen').classList.add('active');
+            
+            document.getElementById('chatPartnerName').textContent = name;
+            document.getElementById('matchInfo').textContent = `AI 매칭 ${similarity}%`;
+            
+            // 채팅 메시지 초기화 및 환영 메시지
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+            
+            setTimeout(() => {
+                addChatMessage('ai', `안녕하세요! ${name}입니다. 반가워요! 😊`);
+            }, 500);
+        }
+        
+        // 채팅 메시지 추가
+        function addChatMessage(sender, message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = message;
+            
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 채팅 메시지 전송
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addChatMessage('user', message);
+                input.value = '';
+                
+                // AI 응답 (간단한 자동 응답)
+                setTimeout(() => {
+                    const responses = [
+                        '정말 그렇네요! 더 자세히 알려주세요.',
+                        '흥미롭네요. 어떻게 생각하세요?',
+                        '아, 그런 일이 있었군요. 기억나는 게 더 있나요?',
+                        '맞아요! 저도 비슷한 경험이 있어요.',
+                        '좋은 얘기네요. 계속 들려주세요!'
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    addChatMessage('ai', randomResponse);
+                }, 1000);
+            }
+        }
+        
+        // 뒤로 가기
+        function goBack() {
+            document.getElementById('chatScreen').classList.remove('active');
+            document.getElementById('mainScreen').classList.add('active');
+        }
+        
+        // Enter 키 이벤트 처리
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginInputs = document.querySelectorAll('#loginScreen input');
+            loginInputs.forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        login();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
